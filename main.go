@@ -27,9 +27,9 @@ func userById(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/{$}", home)
-	mux.HandleFunc("/users", users)
-	mux.HandleFunc("/users/{userID}", userById)
+	mux.HandleFunc("GET /{$}", home)
+	mux.HandleFunc("GET /users", users)
+	mux.HandleFunc("GET /users/{userID}", userById)
 
 	log.Print("Starting server on :4000")
 
