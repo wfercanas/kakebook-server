@@ -26,6 +26,7 @@ func getUserById(w http.ResponseWriter, r *http.Request) {
 }
 
 func createNewUser(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Created a new user..."))
 }
 
