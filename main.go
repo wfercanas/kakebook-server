@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -10,11 +11,11 @@ import (
 
 func home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Server", "Go")
-	w.Write([]byte("Hello from kakebook"))
+	fmt.Fprintf(w, "Hello from kakebook")
 }
 
 func users(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Returning all users..."))
+	fmt.Fprint(w, "Returning all users...")
 }
 
 func getUserById(w http.ResponseWriter, r *http.Request) {
@@ -23,12 +24,13 @@ func getUserById(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	w.Write([]byte("Returning the specific user with ID: " + id.String()))
+
+	fmt.Fprintf(w, "Returning the specific user with ID: %s", id.String())
 }
 
 func createNewUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("Created a new user..."))
+	fmt.Fprint(w, "Created a new user...")
 }
 
 func main() {
