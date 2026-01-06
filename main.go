@@ -16,7 +16,7 @@ func users(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Returning all users..."))
 }
 
-func userById(w http.ResponseWriter, r *http.Request) {
+func getUserById(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(r.PathValue("userID"))
 	if err != nil {
 		http.NotFound(w, r)
@@ -25,11 +25,17 @@ func userById(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Returning the specific user with ID: " + id.String()))
 }
 
+func createNewUser(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Created a new user..."))
+}
+
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /{$}", home)
 	mux.HandleFunc("GET /users", users)
-	mux.HandleFunc("GET /users/{userID}", userById)
+	mux.HandleFunc("GET /users/{userID}", getUserById)
+
+	mux.HandleFunc("POST /users", createNewUser)
 
 	log.Print("Starting server on :4000")
 
