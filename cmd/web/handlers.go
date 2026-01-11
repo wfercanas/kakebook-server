@@ -22,8 +22,7 @@ func (app *application) users(w http.ResponseWriter, r *http.Request) {
 func (app *application) getUserById(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(r.PathValue("userID"))
 	if err != nil {
-		app.logger.Error(err.Error(), slog.String("method", r.Method), slog.String("uri", r.URL.RequestURI()))
-		http.NotFound(w, r)
+		app.clientError(w, r, http.StatusBadRequest)
 		return
 	}
 
