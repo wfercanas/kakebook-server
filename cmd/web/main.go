@@ -9,11 +9,13 @@ import (
 	"os"
 
 	_ "github.com/lib/pq"
+	"github.com/wfercanas/kakebook-server/internal/model"
 )
 
 type application struct {
-	logger *slog.Logger
-	db     *sql.DB
+	logger  *slog.Logger
+	users   *model.UserModel
+	entries *model.EntryModel
 }
 
 func main() {
@@ -31,8 +33,9 @@ func main() {
 	defer db.Close()
 
 	app := &application{
-		logger: logger,
-		db:     db,
+		logger:  logger,
+		users:   &model.UserModel{DB: db},
+		entries: &model.EntryModel{DB: db},
 	}
 
 	app.logger.Info("starting server", slog.String("addr", *addr))

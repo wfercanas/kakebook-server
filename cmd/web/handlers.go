@@ -14,20 +14,27 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello from kakebook")
 }
 
-func (app *application) users(w http.ResponseWriter, r *http.Request) {
+func (app *application) getUsers(w http.ResponseWriter, r *http.Request) {
 	app.logger.Info(http.StatusText(http.StatusOK), slog.String("method", r.Method), slog.String("uri", r.URL.RequestURI()))
 	fmt.Fprint(w, "Returning all users...")
 }
 
 func (app *application) getUserById(w http.ResponseWriter, r *http.Request) {
-	id, err := uuid.Parse(r.PathValue("userID"))
+	userId, err := uuid.Parse(r.PathValue("userID"))
 	if err != nil {
 		app.clientError(w, r, http.StatusBadRequest)
 		return
 	}
 
+	user, err := app.users.Get(userId)
+	if err != nil {
+		app.clientError(w, r, http.StatusNotFound)
+		app.logger.Info(err.Error())
+		return
+	}
+
 	app.logger.Info(http.StatusText(http.StatusOK), slog.String("method", r.Method), slog.String("uri", r.URL.RequestURI()))
-	fmt.Fprintf(w, "Returning the specific user with ID: %s", id.String())
+	fmt.Fprintf(w, user.String())
 }
 
 func (app *application) createNewUser(w http.ResponseWriter, r *http.Request) {
