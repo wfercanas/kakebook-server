@@ -10,6 +10,7 @@ func (app *application) routes() *http.ServeMux {
 	mux.HandleFunc("GET /users/{userID}", app.getUserById)
 
 	mux.HandleFunc("POST /users", app.createNewUser)
+	mux.HandleFunc("POST /entries", app.createNewEntry)
 
 	return mux
 }
