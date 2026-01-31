@@ -9,15 +9,9 @@ import (
 	"os"
 
 	_ "github.com/lib/pq"
+	"github.com/wfercanas/kakebook-server/cmd/web/config"
 	"github.com/wfercanas/kakebook-server/internal/model"
 )
-
-type application struct {
-	logger   *slog.Logger
-	users    *model.UserModel
-	entries  *model.EntryModel
-	accounts *model.AccountModel
-}
 
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP Address")
@@ -33,16 +27,16 @@ func main() {
 
 	defer db.Close()
 
-	app := &application{
-		logger:   logger,
-		users:    &model.UserModel{DB: db},
-		entries:  &model.EntryModel{DB: db},
-		accounts: &model.AccountModel{DB: db},
+	app := &config.Application{
+		Logger:   logger,
+		Users:    &model.UserModel{DB: db},
+		Entries:  &model.EntryModel{DB: db},
+		Accounts: &model.AccountModel{DB: db},
 	}
 
-	app.logger.Info("starting server", slog.String("addr", *addr))
+	app.Logger.Info("starting server", slog.String("addr", *addr))
 
-	err = http.ListenAndServe(*addr, app.routes())
+	err = http.ListenAndServe(*addr, routes(app))
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)

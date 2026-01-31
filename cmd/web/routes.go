@@ -1,17 +1,22 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
 
-func (app *application) routes() *http.ServeMux {
+	"github.com/wfercanas/kakebook-server/cmd/web/config"
+	"github.com/wfercanas/kakebook-server/cmd/web/handlers"
+)
+
+func routes(app *config.Application) *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /{$}", app.home)
-	mux.HandleFunc("GET /users", app.getUsers)
-	mux.HandleFunc("GET /users/{userID}", app.getUserById)
+	mux.HandleFunc("GET /{$}", handlers.Health(app))
+	mux.HandleFunc("GET /users/{$}", handlers.GetUsers(app))
+	mux.HandleFunc("GET /users/{userID}", handlers.GetUserById(app))
 
-	mux.HandleFunc("POST /users", app.createNewUser)
-	mux.HandleFunc("POST /entries", app.createNewEntry)
-	mux.HandleFunc("POST /accounts", app.createNewAccount)
+	mux.HandleFunc("POST /users", handlers.CreateNewUser(app))
+	mux.HandleFunc("POST /entries", handlers.CreateNewEntry(app))
+	mux.HandleFunc("POST /accounts", handlers.CreateNewAccount(app))
 
 	return mux
 }
