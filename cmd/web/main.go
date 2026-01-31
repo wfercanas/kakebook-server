@@ -13,9 +13,10 @@ import (
 )
 
 type application struct {
-	logger  *slog.Logger
-	users   *model.UserModel
-	entries *model.EntryModel
+	logger   *slog.Logger
+	users    *model.UserModel
+	entries  *model.EntryModel
+	accounts *model.AccountModel
 }
 
 func main() {
@@ -33,9 +34,10 @@ func main() {
 	defer db.Close()
 
 	app := &application{
-		logger:  logger,
-		users:   &model.UserModel{DB: db},
-		entries: &model.EntryModel{DB: db},
+		logger:   logger,
+		users:    &model.UserModel{DB: db},
+		entries:  &model.EntryModel{DB: db},
+		accounts: &model.AccountModel{DB: db},
 	}
 
 	app.logger.Info("starting server", slog.String("addr", *addr))

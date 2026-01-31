@@ -72,6 +72,42 @@ func (app *application) createNewEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.logger.Info(http.StatusText(http.StatusOK), slog.String("method", r.Method), slog.String("uri", r.URL.RequestURI()))
+	app.logger.Info(http.StatusText(http.StatusCreated), slog.String("method", r.Method), slog.String("uri", r.URL.RequestURI()))
+	w.WriteHeader(http.StatusCreated)
+}
+
+type NewAccount struct {
+	Name            string    `json:"name"`
+	AccountCategory string    `json:"account_category"`
+	ProjectId       uuid.UUID `json:"project_id"`
+}
+
+func (app *application) createNewAccount(w http.ResponseWriter, r *http.Request) {
+	var account NewAccount
+	err := json.NewDecoder(r.Body).Decode(&account)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	if account.Name == "" || account.AccountCategory == "" {
+		app.logger.Info("Missing name or account_category")
+		app.clientError(w, r, http.StatusBadRequest)
+		return
+	}
+
+	if account.ProjectId == uuid.Nil {
+		app.logger.Info("Missing project_id")
+		app.clientError(w, r, http.StatusBadRequest)
+		return
+	}
+
+	err = app.accounts.Insert(account.Name, account.AccountCategory, account.ProjectId)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	app.logger.Info(http.StatusText(http.StatusCreated), slog.String("method", r.Method), slog.String("uri", r.URL.RequestURI()))
 	w.WriteHeader(http.StatusCreated)
 }

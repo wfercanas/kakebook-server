@@ -11,6 +11,7 @@ func (app *application) routes() *http.ServeMux {
 
 	mux.HandleFunc("POST /users", app.createNewUser)
 	mux.HandleFunc("POST /entries", app.createNewEntry)
+	mux.HandleFunc("POST /accounts", app.createNewAccount)
 
 	return mux
 }
