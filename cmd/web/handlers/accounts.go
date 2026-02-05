@@ -1,13 +1,45 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/wfercanas/kakebook-server/cmd/web/config"
 )
+
+func GetAccountById(app *config.Application) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		accountId, err := uuid.Parse(r.PathValue("accountID"))
+		if err != nil {
+			app.Logger.Info("Cannot parse account_id into valid UUID")
+			app.ClientError(w, r, http.StatusBadRequest)
+			return
+		}
+
+		account, err := app.Accounts.GetAccountById(accountId)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				app.ClientError(w, r, http.StatusNotFound)
+				return
+			} else {
+				app.ServerError(w, r, err)
+				return
+			}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+
+		err = json.NewEncoder(w).Encode(account)
+		if err != nil {
+			app.ServerError(w, r, err)
+			return
+		}
+	}
+}
 
 type newAccount struct {
 	Name            string    `json:"name"`
