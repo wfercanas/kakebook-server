@@ -3,6 +3,7 @@ package config
 import (
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/wfercanas/kakebook-server/internal/model"
 )
@@ -26,6 +27,6 @@ func (app *Application) ClientError(w http.ResponseWriter, r *http.Request, stat
 	method := r.Method
 	uri := r.URL.RequestURI()
 
-	app.Logger.Info(http.StatusText(status), slog.String("method", method), slog.String("uri", uri))
+	app.Logger.Info(http.StatusText(status), slog.String("status", strconv.Itoa(status)), slog.String("method", method), slog.String("uri", uri))
 	http.Error(w, http.StatusText(status), status)
 }

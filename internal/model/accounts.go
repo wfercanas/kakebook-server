@@ -2,6 +2,7 @@ package model
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/google/uuid"
 )
@@ -42,7 +43,11 @@ func (m *AccountModel) GetAccountById(id uuid.UUID) (Account, error) {
 	result := m.DB.QueryRow(accountStmt, id)
 	err := result.Scan(&account.AccountName, &account.ProjectId, &account.AccountCategory)
 	if err != nil {
-		return Account{}, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return Account{}, ErrNoRecord
+		} else {
+			return Account{}, err
+		}
 	}
 
 	movementsStmt := `SELECT movement_type, sum(value)

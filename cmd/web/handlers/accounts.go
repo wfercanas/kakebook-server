@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -9,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/wfercanas/kakebook-server/cmd/web/config"
+	"github.com/wfercanas/kakebook-server/internal/model"
 )
 
 func GetAccountById(app *config.Application) func(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +22,7 @@ func GetAccountById(app *config.Application) func(w http.ResponseWriter, r *http
 
 		account, err := app.Accounts.GetAccountById(accountId)
 		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
+			if errors.Is(err, model.ErrNoRecord) {
 				app.ClientError(w, r, http.StatusNotFound)
 				return
 			} else {
