@@ -32,6 +32,7 @@ func main() {
 		Users:    &model.UserModel{DB: db},
 		Entries:  &model.EntryModel{DB: db},
 		Accounts: &model.AccountModel{DB: db},
+		Projects: &model.ProjectModel{DB: db},
 	}
 
 	app.Logger.Info("starting server", slog.String("addr", *addr))

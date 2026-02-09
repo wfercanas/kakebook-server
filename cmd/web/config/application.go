@@ -13,6 +13,7 @@ type Application struct {
 	Users    *model.UserModel
 	Entries  *model.EntryModel
 	Accounts *model.AccountModel
+	Projects *model.ProjectModel
 }
 
 func (app *Application) ServerError(w http.ResponseWriter, r *http.Request, err error) {
