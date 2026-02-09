@@ -38,8 +38,15 @@ func GetUserById(app *config.Application) func(w http.ResponseWriter, r *http.Re
 			}
 		}
 
+		w.Header().Set("Content-Type", "application/json")
+
+		err = json.NewEncoder(w).Encode(user)
+		if err != nil {
+			app.ServerError(w, r, err)
+			return
+		}
+
 		app.Logger.Info(http.StatusText(http.StatusOK), slog.String("method", r.Method), slog.String("uri", r.URL.RequestURI()))
-		fmt.Fprintf(w, user.String())
 	}
 }
 
