@@ -38,6 +38,8 @@ func GetAccountById(app *config.Application) func(w http.ResponseWriter, r *http
 			app.ServerError(w, r, err)
 			return
 		}
+
+		app.Logger.Info(http.StatusText(http.StatusOK), slog.String("method", r.Method), slog.String("uri", r.URL.RequestURI()))
 	}
 }
 

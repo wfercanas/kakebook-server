@@ -50,6 +50,15 @@ func (m *AccountModel) GetAccountById(id uuid.UUID) (Account, error) {
 		}
 	}
 
+	err = m.CalculateAccountBalance(&account)
+	if err != nil {
+		return Account{}, err
+	}
+
+	return account, nil
+}
+
+func (m *AccountModel) CalculateAccountBalance(account *Account) error {
 	movementsStmt := `SELECT movement_type, sum(value)
 	FROM movements
 	WHERE account_id = $1
@@ -64,14 +73,14 @@ func (m *AccountModel) GetAccountById(id uuid.UUID) (Account, error) {
 
 	rows, err := m.DB.Query(movementsStmt, account.AccountId)
 	if err != nil {
-		return Account{}, err
+		return err
 	}
 
 	for rows.Next() {
 		var s subtotal
 		err = rows.Scan(&s.movement_type, &s.amount)
 		if err != nil {
-			return Account{}, err
+			return err
 		}
 
 		if account.AccountCategory == "assets" || account.AccountCategory == "expenses" {
@@ -93,5 +102,5 @@ func (m *AccountModel) GetAccountById(id uuid.UUID) (Account, error) {
 
 	account.Balance = balance
 
-	return account, nil
+	return nil
 }

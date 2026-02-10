@@ -46,3 +46,34 @@ func (m *ProjectModel) GetProjectsByUserId(userId uuid.UUID) ([]Project, error) 
 
 	return projects, nil
 }
+
+func (m *ProjectModel) GetAccountsByProjectId(projectId uuid.UUID) ([]Account, error) {
+	stmt := `SELECT account_id, account_name, account_category, project_id
+	FROM accounts
+	WHERE project_id = $1
+	ORDER BY account_category`
+
+	results, err := m.DB.Query(stmt, projectId)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNoRecord
+		} else {
+			return nil, err
+		}
+	}
+
+	var accounts []Account
+
+	for results.Next() {
+		var account Account
+
+		err = results.Scan(&account.AccountId, &account.AccountName, &account.AccountCategory, &account.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+
+		accounts = append(accounts, account)
+	}
+
+	return accounts, nil
+}
