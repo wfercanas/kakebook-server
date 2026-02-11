@@ -2,6 +2,7 @@ package model
 
 import (
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -36,6 +37,40 @@ type EntryModel struct {
 
 func (m *EntryModel) Get(entryId uuid.UUID) (Entry, error) {
 	return Entry{}, nil
+}
+
+func (m *EntryModel) Delete(entryId uuid.UUID) error {
+	movementStmt := `DELETE FROM movements
+	WHERE entry_id = $1`
+
+	entryStmt := `DELETE FROM entries
+	WHERE entry_id = $1`
+
+	tx, err := m.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec(movementStmt, entryId)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrNoRecord
+		}
+		return err
+	}
+
+	_, err = tx.Exec(entryStmt, entryId)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrNoRecord
+		}
+		return err
+	}
+
+	tx.Commit()
+	return nil
+
 }
 
 func (m *EntryModel) Insert(newEntry NewEntry) error {

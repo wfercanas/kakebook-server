@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 	"slices"
@@ -62,5 +63,26 @@ func CreateNewEntry(app *config.Application) func(w http.ResponseWriter, r *http
 		app.Logger.Info(http.StatusText(http.StatusCreated), slog.String("method", r.Method), slog.String("uri", r.URL.RequestURI()))
 		w.WriteHeader(http.StatusCreated)
 	}
+}
 
+func DeleteEntry(app *config.Application) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		entryId, err := uuid.Parse(r.PathValue("entryId"))
+		if err != nil {
+			app.ClientError(w, r, http.StatusBadRequest)
+			return
+		}
+
+		err = app.Entries.Delete(entryId)
+		if err != nil {
+			if errors.Is(err, model.ErrNoRecord) {
+				app.ClientError(w, r, http.StatusBadRequest)
+				return
+			}
+			app.ServerError(w, r, err)
+		}
+
+		app.Logger.Info(http.StatusText(http.StatusCreated), slog.String("method", r.Method), slog.String("uri", r.URL.RequestURI()))
+		w.WriteHeader(http.StatusNoContent)
+	}
 }

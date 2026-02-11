@@ -21,5 +21,7 @@ func routes(app *config.Application) *http.ServeMux {
 	mux.HandleFunc("POST /entries", handlers.CreateNewEntry(app))
 	mux.HandleFunc("POST /accounts", handlers.CreateNewAccount(app))
 
+	mux.HandleFunc("DELETE /entries/{entryId}", handlers.DeleteEntry(app))
+
 	return mux
 }
