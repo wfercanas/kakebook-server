@@ -12,8 +12,22 @@ type Entry struct {
 	date        time.Time
 	description string
 	projectId   uuid.UUID
-	amount      float32
+	amount      float64
 	movements   []Movement
+}
+
+type NewEntry struct {
+	ProjectId   uuid.UUID     `json:"project_id"`
+	Date        string        `json:"date"`
+	Description string        `json:"description"`
+	Movements   []NewMovement `json:"movements"`
+	Amount      float64       `json:"amount"`
+}
+
+type NewMovement struct {
+	AccountId    uuid.UUID `json:"account_id"`
+	MovementType string    `json:"movement_type"`
+	Value        float64   `json:"value"`
 }
 
 type EntryModel struct {
@@ -24,7 +38,7 @@ func (m *EntryModel) Get(entryId uuid.UUID) (Entry, error) {
 	return Entry{}, nil
 }
 
-func (m *EntryModel) Insert(date time.Time, description string, projectId uuid.UUID, amount float32) error {
+func (m *EntryModel) Insert(newEntry NewEntry) error {
 	entryStmt := `INSERT INTO entries (entry_id, date, description, project_id, amount)
 	VALUES (gen_random_uuid(), $1, $2, $3, $4) RETURNING entry_id`
 
@@ -39,28 +53,16 @@ func (m *EntryModel) Insert(date time.Time, description string, projectId uuid.U
 
 	var entryId uuid.UUID
 
-	err = tx.QueryRow(entryStmt, date, description, projectId, amount).Scan(&entryId)
+	err = tx.QueryRow(entryStmt, newEntry.Date, newEntry.Description, newEntry.ProjectId, newEntry.Amount).Scan(&entryId)
 	if err != nil {
 		return err
 	}
 
-	bancolombiaId, err := uuid.Parse("418d3211-fb86-44e4-b83f-309107e51473")
-	if err != nil {
-		return err
-	}
-	nuId, err := uuid.Parse("e1d7c3ac-4156-4b19-97e2-782097b14e60")
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Exec(movementStmt, amount, "debit", bancolombiaId, entryId)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Exec(movementStmt, amount, "credit", nuId, entryId)
-	if err != nil {
-		return err
+	for _, movement := range newEntry.Movements {
+		_, err := tx.Exec(movementStmt, movement.Value, movement.MovementType, movement.AccountId, entryId)
+		if err != nil {
+			return err
+		}
 	}
 
 	tx.Commit()

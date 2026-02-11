@@ -4,35 +4,56 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
-	"time"
+	"slices"
 
 	"github.com/google/uuid"
 	"github.com/wfercanas/kakebook-server/cmd/web/config"
+	"github.com/wfercanas/kakebook-server/internal/model"
 )
-
-type newEntry struct {
-	ProjectId   uuid.UUID `json:"project_id"`
-	Date        string    `json:"date"`
-	Description string    `json:"description"`
-	Amount      float32   `json:"amount"`
-}
 
 func CreateNewEntry(app *config.Application) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var entry newEntry
-		err := json.NewDecoder(r.Body).Decode(&entry)
+		var newEntry model.NewEntry
+		err := json.NewDecoder(r.Body).Decode(&newEntry)
 		if err != nil {
 			app.ServerError(w, r, err)
 			return
 		}
 
-		date, err := time.Parse("2006-01-02", entry.Date)
-		if err != nil {
-			app.ServerError(w, r, err)
+		debits := 0.0
+		credits := 0.0
+		var accountIds []uuid.UUID
+
+		for _, movement := range newEntry.Movements {
+			if slices.Contains(accountIds, movement.AccountId) {
+				app.ClientError(w, r, http.StatusBadRequest)
+				return
+			} else {
+				accountIds = append(accountIds, movement.AccountId)
+			}
+		}
+
+		for _, movement := range newEntry.Movements {
+			if movement.MovementType == "debit" {
+				debits += movement.Value
+				continue
+			}
+			if movement.MovementType == "credit" {
+				credits += movement.Value
+				continue
+			}
+			app.ClientError(w, r, http.StatusBadRequest)
 			return
 		}
 
-		err = app.Entries.Insert(date, entry.Description, entry.ProjectId, entry.Amount)
+		if debits != credits {
+			app.ClientError(w, r, http.StatusBadRequest)
+			return
+		}
+
+		newEntry.Amount = debits
+
+		err = app.Entries.Insert(newEntry)
 		if err != nil {
 			app.ServerError(w, r, err)
 			return
