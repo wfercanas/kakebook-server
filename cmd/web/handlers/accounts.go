@@ -42,15 +42,9 @@ func GetAccountById(app *config.Application) func(w http.ResponseWriter, r *http
 	}
 }
 
-type newAccount struct {
-	Name            string    `json:"name"`
-	AccountCategory string    `json:"account_category"`
-	ProjectId       uuid.UUID `json:"project_id"`
-}
-
 func CreateNewAccount(app *config.Application) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var account newAccount
+		var account model.NewAccount
 		err := json.NewDecoder(r.Body).Decode(&account)
 		if err != nil {
 			app.ServerError(w, r, err)

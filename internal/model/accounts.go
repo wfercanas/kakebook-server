@@ -15,6 +15,12 @@ type Account struct {
 	Balance         float64   `json:"balance"`
 }
 
+type NewAccount struct {
+	Name            string    `json:"name"`
+	AccountCategory string    `json:"account_category"`
+	ProjectId       uuid.UUID `json:"project_id"`
+}
+
 type AccountModel struct {
 	DB *sql.DB
 }
