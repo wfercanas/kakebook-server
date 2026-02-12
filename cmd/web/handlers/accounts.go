@@ -15,15 +15,14 @@ func GetAccountById(app *config.Application) func(w http.ResponseWriter, r *http
 	return func(w http.ResponseWriter, r *http.Request) {
 		accountId, err := uuid.Parse(r.PathValue("accountID"))
 		if err != nil {
-			app.Logger.Info("Cannot parse account_id into valid UUID")
-			app.ClientError(w, r, http.StatusBadRequest)
+			app.ClientError(w, r, http.StatusBadRequest, "Invalid Account Id")
 			return
 		}
 
 		account, err := app.Accounts.GetAccountById(accountId)
 		if err != nil {
 			if errors.Is(err, model.ErrNoRecord) {
-				app.ClientError(w, r, http.StatusNotFound)
+				app.ClientError(w, r, http.StatusNotFound, http.StatusText(http.StatusNotFound))
 				return
 			} else {
 				app.ServerError(w, r, err)
@@ -58,15 +57,18 @@ func CreateNewAccount(app *config.Application) func(w http.ResponseWriter, r *ht
 			return
 		}
 
-		if account.Name == "" || account.AccountCategory == "" {
-			app.Logger.Info("Missing name or account_category")
-			app.ClientError(w, r, http.StatusBadRequest)
+		if account.Name == "" {
+			app.ClientError(w, r, http.StatusBadRequest, "Invalid Account Name")
+			return
+		}
+
+		if account.AccountCategory == "" {
+			app.ClientError(w, r, http.StatusBadRequest, "Invalid Account Category")
 			return
 		}
 
 		if account.ProjectId == uuid.Nil {
-			app.Logger.Info("Missing project_id")
-			app.ClientError(w, r, http.StatusBadRequest)
+			app.ClientError(w, r, http.StatusBadRequest, "Invalid Project Id")
 			return
 		}
 

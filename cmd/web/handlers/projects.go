@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -15,14 +16,14 @@ func GetAccountsByProjectId(app *config.Application) func(w http.ResponseWriter,
 	return func(w http.ResponseWriter, r *http.Request) {
 		projectId, err := uuid.Parse(r.PathValue("projectID"))
 		if err != nil {
-			app.ClientError(w, r, http.StatusBadRequest)
+			app.ClientError(w, r, http.StatusBadRequest, fmt.Sprintf("Invalid Project Id: %s", r.PathValue("projectID")))
 			return
 		}
 
 		accounts, err := app.Projects.GetAccountsByProjectId(projectId)
 		if err != nil {
 			if errors.Is(err, model.ErrNoRecord) {
-				app.ClientError(w, r, http.StatusNotFound)
+				app.ClientError(w, r, http.StatusNotFound, http.StatusText(http.StatusNotFound))
 				return
 			} else {
 				app.ServerError(w, r, err)
@@ -31,7 +32,11 @@ func GetAccountsByProjectId(app *config.Application) func(w http.ResponseWriter,
 		}
 
 		for i := range accounts {
-			app.Accounts.CalculateAccountBalance(&accounts[i])
+			err = app.Accounts.CalculateAccountBalance(&accounts[i])
+			if err != nil {
+				app.ServerError(w, r, err)
+				return
+			}
 		}
 
 		var body struct {

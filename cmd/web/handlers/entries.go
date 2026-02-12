@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"slices"
@@ -27,7 +28,7 @@ func CreateNewEntry(app *config.Application) func(w http.ResponseWriter, r *http
 
 		for _, movement := range newEntry.Movements {
 			if slices.Contains(accountIds, movement.AccountId) {
-				app.ClientError(w, r, http.StatusBadRequest)
+				app.ClientError(w, r, http.StatusBadRequest, fmt.Sprintf("An account can only be used once: %s", movement.AccountId))
 				return
 			} else {
 				accountIds = append(accountIds, movement.AccountId)
@@ -43,12 +44,12 @@ func CreateNewEntry(app *config.Application) func(w http.ResponseWriter, r *http
 				credits += movement.Value
 				continue
 			}
-			app.ClientError(w, r, http.StatusBadRequest)
+			app.ClientError(w, r, http.StatusBadRequest, fmt.Sprintf("Invalid Movement Type: %s", movement.MovementType))
 			return
 		}
 
 		if debits != credits {
-			app.ClientError(w, r, http.StatusBadRequest)
+			app.ClientError(w, r, http.StatusBadRequest, "Debits and Credits must be equal")
 			return
 		}
 
@@ -69,14 +70,14 @@ func DeleteEntry(app *config.Application) func(w http.ResponseWriter, r *http.Re
 	return func(w http.ResponseWriter, r *http.Request) {
 		entryId, err := uuid.Parse(r.PathValue("entryId"))
 		if err != nil {
-			app.ClientError(w, r, http.StatusBadRequest)
+			app.ClientError(w, r, http.StatusBadRequest, fmt.Sprintf("Invalid Entry Id: %s", r.PathValue("entryId")))
 			return
 		}
 
 		err = app.Entries.Delete(entryId)
 		if err != nil {
 			if errors.Is(err, model.ErrNoRecord) {
-				app.ClientError(w, r, http.StatusBadRequest)
+				app.ClientError(w, r, http.StatusNotFound, http.StatusText(http.StatusNotFound))
 				return
 			}
 			app.ServerError(w, r, err)

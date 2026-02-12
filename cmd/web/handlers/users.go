@@ -23,14 +23,14 @@ func GetUserById(app *config.Application) func(w http.ResponseWriter, r *http.Re
 	return func(w http.ResponseWriter, r *http.Request) {
 		userId, err := uuid.Parse(r.PathValue("userID"))
 		if err != nil {
-			app.ClientError(w, r, http.StatusBadRequest)
+			app.ClientError(w, r, http.StatusBadRequest, fmt.Sprintf("Invalid User Id: %s", r.PathValue("userID")))
 			return
 		}
 
 		user, err := app.Users.Get(userId)
 		if err != nil {
 			if errors.Is(err, model.ErrNoRecord) {
-				app.ClientError(w, r, http.StatusNotFound)
+				app.ClientError(w, r, http.StatusNotFound, http.StatusText(http.StatusNotFound))
 				return
 			} else {
 				app.ServerError(w, r, err)
@@ -54,14 +54,14 @@ func GetProjectsByUserId(app *config.Application) func(w http.ResponseWriter, r 
 	return func(w http.ResponseWriter, r *http.Request) {
 		userId, err := uuid.Parse(r.PathValue("userID"))
 		if err != nil {
-			app.ClientError(w, r, http.StatusBadRequest)
+			app.ClientError(w, r, http.StatusBadRequest, fmt.Sprintf("Invalid User Id: %s", r.PathValue("userID")))
 			return
 		}
 
 		projects, err := app.Projects.GetProjectsByUserId(userId)
 		if err != nil {
 			if errors.Is(err, model.ErrNoRecord) {
-				app.ClientError(w, r, http.StatusNotFound)
+				app.ClientError(w, r, http.StatusNotFound, http.StatusText(http.StatusNotFound))
 				return
 			} else {
 				app.ServerError(w, r, err)
