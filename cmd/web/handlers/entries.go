@@ -13,6 +13,37 @@ import (
 	"github.com/wfercanas/kakebook-server/internal/model"
 )
 
+func GetEntryById(app *config.Application) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		entryId, err := uuid.Parse(r.PathValue("entryId"))
+		if err != nil {
+			app.ClientError(w, r, http.StatusBadRequest, fmt.Sprintf("Invalid Entry Id: %s", r.PathValue("entryId")))
+			return
+		}
+
+		entry, err := app.Entries.Get(entryId)
+		if err != nil {
+			if errors.Is(err, model.ErrNoRecord) {
+				app.ClientError(w, r, http.StatusNotFound, http.StatusText(http.StatusNotFound))
+				return
+			} else {
+				app.ServerError(w, r, err)
+				return
+			}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+
+		err = json.NewEncoder(w).Encode(entry)
+		if err != nil {
+			app.ServerError(w, r, err)
+			return
+		}
+
+		app.Logger.Info(http.StatusText(http.StatusOK), slog.String("method", r.Method), slog.String("uri", r.URL.RequestURI()))
+	}
+}
+
 func CreateNewEntry(app *config.Application) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var newEntry model.NewEntry

@@ -7,24 +7,14 @@ import (
 )
 
 type Movement struct {
-	Value        float32
-	MovementType string
-	AccountId    uuid.UUID
-	EntryId      uuid.UUID
+	AccountName     string    `json:"account_name"`
+	AccountCategory string    `json:"account_category"`
+	MovementType    string    `json:"movement_type"`
+	Value           float32   `json:"value"`
+	AccountId       uuid.UUID `json:"account_id"`
+	EntryId         uuid.UUID `json:"entry_id"`
 }
 
 type MovementModel struct {
 	DB *sql.DB
-}
-
-func (m *MovementModel) Insert(tx *sql.Tx, value float32, movementType string, accountId uuid.UUID, entryId uuid.UUID) error {
-	stmt := `INSERT INTO movements (value, movement_type, account_id, entry_id)
-	VALUES ($1, $2, $3, $4)`
-
-	_, err := tx.Exec(stmt, value, movementType, accountId, entryId)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

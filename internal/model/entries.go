@@ -9,12 +9,12 @@ import (
 )
 
 type Entry struct {
-	entryId     uuid.UUID
-	date        time.Time
-	description string
-	projectId   uuid.UUID
-	amount      float64
-	movements   []Movement
+	Description string     `json:"description"`
+	Date        time.Time  `json:"date"`
+	Amount      float64    `json:"amount"`
+	ProjectId   uuid.UUID  `json:"project_id"`
+	EntryId     uuid.UUID  `json:"entry_id"`
+	Movements   []Movement `json:"movements"`
 }
 
 type NewEntry struct {
@@ -36,7 +36,51 @@ type EntryModel struct {
 }
 
 func (m *EntryModel) Get(entryId uuid.UUID) (Entry, error) {
-	return Entry{}, nil
+	entryStmt := `SELECT description, date, amount, project_id
+	FROM entries
+	WHERE entry_id = $1`
+
+	movementsStmt := `SELECT ac.account_name, ac.account_category, mv.movement_type, mv.value, mv.account_id, mv.entry_id
+	FROM movements mv
+	JOIN accounts ac
+	ON mv.account_id = ac.account_id
+	WHERE mv.entry_id = $1`
+
+	var entry Entry
+
+	result := m.DB.QueryRow(entryStmt, entryId)
+	err := result.Scan(&entry.Description, &entry.Date, &entry.Amount, &entry.ProjectId)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Entry{}, ErrNoRecord
+		} else {
+			return Entry{}, err
+		}
+	}
+
+	entry.EntryId = entryId
+
+	results, err := m.DB.Query(movementsStmt, entryId)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Entry{}, ErrNoRecord
+		} else {
+			return Entry{}, err
+		}
+	}
+
+	for results.Next() {
+		var movement Movement
+
+		err := results.Scan(&movement.AccountName, &movement.AccountCategory, &movement.MovementType, &movement.Value, &movement.AccountId, &movement.EntryId)
+		if err != nil {
+			return Entry{}, err
+		}
+
+		entry.Movements = append(entry.Movements, movement)
+	}
+
+	return entry, nil
 }
 
 func (m *EntryModel) Delete(entryId uuid.UUID) error {
