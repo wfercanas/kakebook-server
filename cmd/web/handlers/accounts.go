@@ -13,7 +13,7 @@ import (
 
 func GetAccountById(app *config.Application) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		accountId, err := uuid.Parse(r.PathValue("accountID"))
+		accountId, err := uuid.Parse(r.PathValue("accountId"))
 		if err != nil {
 			app.ClientError(w, r, http.StatusBadRequest, "Invalid Account Id")
 			return

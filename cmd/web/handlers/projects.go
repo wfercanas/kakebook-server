@@ -14,9 +14,9 @@ import (
 
 func GetAccountsByProjectId(app *config.Application) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		projectId, err := uuid.Parse(r.PathValue("projectID"))
+		projectId, err := uuid.Parse(r.PathValue("projectId"))
 		if err != nil {
-			app.ClientError(w, r, http.StatusBadRequest, fmt.Sprintf("Invalid Project Id: %s", r.PathValue("projectID")))
+			app.ClientError(w, r, http.StatusBadRequest, fmt.Sprintf("Invalid Project Id: %s", r.PathValue("projectId")))
 			return
 		}
 

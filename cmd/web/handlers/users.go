@@ -21,9 +21,9 @@ func GetUsers(app *config.Application) func(w http.ResponseWriter, r *http.Reque
 
 func GetUserById(app *config.Application) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, err := uuid.Parse(r.PathValue("userID"))
+		userId, err := uuid.Parse(r.PathValue("userId"))
 		if err != nil {
-			app.ClientError(w, r, http.StatusBadRequest, fmt.Sprintf("Invalid User Id: %s", r.PathValue("userID")))
+			app.ClientError(w, r, http.StatusBadRequest, fmt.Sprintf("Invalid User Id: %s", r.PathValue("userId")))
 			return
 		}
 
@@ -52,9 +52,9 @@ func GetUserById(app *config.Application) func(w http.ResponseWriter, r *http.Re
 
 func GetProjectsByUserId(app *config.Application) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, err := uuid.Parse(r.PathValue("userID"))
+		userId, err := uuid.Parse(r.PathValue("userId"))
 		if err != nil {
-			app.ClientError(w, r, http.StatusBadRequest, fmt.Sprintf("Invalid User Id: %s", r.PathValue("userID")))
+			app.ClientError(w, r, http.StatusBadRequest, fmt.Sprintf("Invalid User Id: %s", r.PathValue("userId")))
 			return
 		}
 

@@ -12,10 +12,10 @@ func routes(app *config.Application) *http.ServeMux {
 
 	mux.HandleFunc("GET /{$}", handlers.Health(app))
 	mux.HandleFunc("GET /users/{$}", handlers.GetUsers(app))
-	mux.HandleFunc("GET /users/{userID}", handlers.GetUserById(app))
-	mux.HandleFunc("GET /users/{userID}/projects", handlers.GetProjectsByUserId(app))
-	mux.HandleFunc("GET /projects/{projectID}/accounts", handlers.GetAccountsByProjectId(app))
-	mux.HandleFunc("GET /accounts/{accountID}", handlers.GetAccountById(app))
+	mux.HandleFunc("GET /users/{userId}", handlers.GetUserById(app))
+	mux.HandleFunc("GET /users/{userId}/projects", handlers.GetProjectsByUserId(app))
+	mux.HandleFunc("GET /projects/{projectId}/accounts", handlers.GetAccountsByProjectId(app))
+	mux.HandleFunc("GET /accounts/{accountId}", handlers.GetAccountById(app))
 	mux.HandleFunc("GET /entries/{entryId}", handlers.GetEntryById(app))
 
 	mux.HandleFunc("POST /users", handlers.CreateNewUser(app))
