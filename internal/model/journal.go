@@ -17,6 +17,14 @@ type Entry struct {
 	Movements   []Movement `json:"movements"`
 }
 
+type Movement struct {
+	AccountName     string    `json:"account_name"`
+	AccountCategory string    `json:"account_category"`
+	MovementType    string    `json:"movement_type"`
+	Value           float32   `json:"value"`
+	AccountId       uuid.UUID `json:"account_id"`
+}
+
 type NewEntry struct {
 	ProjectId   uuid.UUID     `json:"project_id"`
 	Date        string        `json:"date"`
@@ -40,7 +48,7 @@ func (m *EntryModel) Get(entryId uuid.UUID) (Entry, error) {
 	FROM entries
 	WHERE entry_id = $1`
 
-	movementsStmt := `SELECT ac.account_name, ac.account_category, mv.movement_type, mv.value, mv.account_id, mv.entry_id
+	movementsStmt := `SELECT ac.account_name, ac.account_category, mv.movement_type, mv.value, mv.account_id
 	FROM movements mv
 	JOIN accounts ac
 	ON mv.account_id = ac.account_id
@@ -72,7 +80,7 @@ func (m *EntryModel) Get(entryId uuid.UUID) (Entry, error) {
 	for results.Next() {
 		var movement Movement
 
-		err := results.Scan(&movement.AccountName, &movement.AccountCategory, &movement.MovementType, &movement.Value, &movement.AccountId, &movement.EntryId)
+		err := results.Scan(&movement.AccountName, &movement.AccountCategory, &movement.MovementType, &movement.Value, &movement.AccountId)
 		if err != nil {
 			return Entry{}, err
 		}

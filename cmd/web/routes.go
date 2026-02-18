@@ -16,6 +16,7 @@ func routes(app *config.Application) *http.ServeMux {
 	mux.HandleFunc("GET /users/{userId}/projects", handlers.GetProjectsByUserId(app))
 	mux.HandleFunc("GET /projects/{projectId}/accounts", handlers.GetAccountsByProjectId(app))
 	mux.HandleFunc("GET /accounts/{accountId}", handlers.GetAccountById(app))
+	mux.HandleFunc("GET /accounts/{accountId}/ledger", handlers.GetAccountLedgerById(app))
 	mux.HandleFunc("GET /entries/{entryId}", handlers.GetEntryById(app))
 
 	mux.HandleFunc("POST /users", handlers.CreateNewUser(app))

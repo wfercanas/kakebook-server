@@ -14,6 +14,7 @@ type Application struct {
 	Entries  *model.EntryModel
 	Accounts *model.AccountModel
 	Projects *model.ProjectModel
+	Ledger   *model.LedgerModel
 }
 
 func (app *Application) ServerError(w http.ResponseWriter, r *http.Request, err error) {
