@@ -25,19 +25,6 @@ type AccountModel struct {
 	DB *sql.DB
 }
 
-func (m *AccountModel) Insert(name string, accountCategory string, projectId uuid.UUID) error {
-	stmt := `INSERT INTO accounts (account_id, account_name, account_category, project_id)
-	VALUES (gen_random_uuid(), $1, $2, $3) RETURNING account_id`
-
-	var accountId uuid.UUID
-	err := m.DB.QueryRow(stmt, name, accountCategory, projectId).Scan(&accountId)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *AccountModel) GetAccountById(id uuid.UUID) (Account, error) {
 	accountStmt := `SELECT account_name, project_id, account_category
 	FROM accounts 
@@ -107,6 +94,45 @@ func (m *AccountModel) CalculateAccountBalance(account *Account) error {
 	}
 
 	account.Balance = balance
+
+	return nil
+}
+
+func (m *AccountModel) Insert(name string, accountCategory string, projectId uuid.UUID) error {
+	stmt := `INSERT INTO accounts (account_id, account_name, account_category, project_id)
+	VALUES (gen_random_uuid(), $1, $2, $3) RETURNING account_id`
+
+	var accountId uuid.UUID
+	err := m.DB.QueryRow(stmt, name, accountCategory, projectId).Scan(&accountId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AccountModel) Delete(accountId uuid.UUID) error {
+	movementsStmt := `SELECT COUNT(*)
+	FROM movements
+	WHERE account_id = $1`
+
+	deleteStmt := `DELETE FROM accounts
+	WHERE account_id = $1`
+
+	var movements int
+	err := m.DB.QueryRow(movementsStmt, accountId).Scan(&movements)
+	if err != nil {
+		return err
+	}
+
+	if movements > 0 {
+		return ErrDeleteUsedAccount
+	}
+
+	_, err = m.DB.Exec(deleteStmt, accountId)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -76,3 +76,27 @@ func CreateNewAccount(app *config.Application) func(w http.ResponseWriter, r *ht
 		w.WriteHeader(http.StatusCreated)
 	}
 }
+
+func DeleteAccount(app *config.Application) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		accountId, err := uuid.Parse(r.PathValue("accountId"))
+		if err != nil {
+			app.ClientError(w, r, http.StatusBadRequest, "Invalid Account Id")
+			return
+		}
+
+		err = app.Accounts.Delete(accountId)
+		if err != nil {
+			if errors.Is(err, model.ErrDeleteUsedAccount) {
+				app.ClientError(w, r, http.StatusBadRequest, model.ErrDeleteUsedAccount.Error())
+				return
+			} else {
+				app.ServerError(w, r, err)
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+		app.Logger.Info(http.StatusText(http.StatusNoContent), slog.String("method", r.Method), slog.String("uri", r.URL.RequestURI()))
+	}
+}
