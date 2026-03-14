@@ -3,10 +3,10 @@ package model
 import (
 	"database/sql"
 	"errors"
-	"slices"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/wfercanas/kakebook-server/internal/shared"
 )
 
 type LedgerAccount struct {
@@ -70,23 +70,12 @@ func (m *LedgerModel) GetLedgerAccountById(accountId uuid.UUID) (LedgerAccount, 
 			return LedgerAccount{}, err
 		}
 
-		var debitAccountCategories []string
-		debitAccountCategories = append(debitAccountCategories, "assets", "expenses")
-
-		if slices.Contains(debitAccountCategories, account.AccountCategory) {
-			if movement.MovementType == "debit" {
-				balance += movement.Value
-			} else {
-				balance -= movement.Value
-			}
-		} else {
-			if movement.MovementType == "debit" {
-				balance += movement.Value
-			} else {
-				balance -= movement.Value
-			}
+		signedMovement, err := shared.GetSignedMovement(account.AccountCategory, movement.MovementType, movement.Value)
+		if err != nil {
+			return LedgerAccount{}, err
 		}
 
+		balance += signedMovement
 		movement.Balance = balance
 		account.Movements = append(account.Movements, movement)
 	}

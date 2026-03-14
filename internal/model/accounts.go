@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
+	"github.com/wfercanas/kakebook-server/internal/shared"
 )
 
 type Account struct {
@@ -76,21 +77,12 @@ func (m *AccountModel) CalculateAccountBalance(account *Account) error {
 			return err
 		}
 
-		if account.AccountCategory == "assets" || account.AccountCategory == "expenses" {
-			if s.movement_type == "debit" {
-				balance += s.amount
-			} else {
-				balance -= s.amount
-			}
+		signedAmount, err := shared.GetSignedMovement(account.AccountCategory, s.movement_type, s.amount)
+		if err != nil {
+			return err
 		}
 
-		if account.AccountCategory != "assets" && account.AccountCategory != "expenses" {
-			if s.movement_type == "credit" {
-				balance += s.amount
-			} else {
-				balance -= s.amount
-			}
-		}
+		balance += signedAmount
 	}
 
 	account.Balance = balance
