@@ -31,18 +31,31 @@ func GetAccountsByProjectId(app *config.Application) func(w http.ResponseWriter,
 			}
 		}
 
-		for i := range accounts {
+		groups := make(map[string][]model.Account)
+		for i, account := range accounts {
 			err = app.Accounts.CalculateAccountBalance(&accounts[i])
 			if err != nil {
 				app.ServerError(w, r, err)
 				return
 			}
+			groups[account.AccountCategory] = append(groups[account.AccountCategory], accounts[i])
 		}
 
-		var body struct {
-			Accounts []model.Account `json:"accounts"`
+		type accountsBody struct {
+			Assets      []model.Account `json:"assets"`
+			Liabilities []model.Account `json:"liabilities"`
+			Equity      []model.Account `json:"equity"`
+			Revenue     []model.Account `json:"revenue"`
+			Expenses    []model.Account `json:"expenses"`
 		}
-		body.Accounts = accounts
+
+		body := accountsBody{
+			Assets:      groups["assets"],
+			Liabilities: groups["liabilities"],
+			Equity:      groups["equity"],
+			Revenue:     groups["revenue"],
+			Expenses:    groups["expenses"],
+		}
 
 		w.Header().Set("Content-Type", "application/json")
 
