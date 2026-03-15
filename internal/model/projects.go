@@ -31,6 +31,7 @@ func (m *ProjectModel) GetProjectsByUserId(userId uuid.UUID) ([]Project, error) 
 			return nil, err
 		}
 	}
+	defer result.Close()
 
 	var projects []Project
 
@@ -61,6 +62,7 @@ func (m *ProjectModel) GetAccountsByProjectId(projectId uuid.UUID) ([]Account, e
 			return nil, err
 		}
 	}
+	defer results.Close()
 
 	var accounts []Account
 

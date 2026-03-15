@@ -76,6 +76,7 @@ func (m *EntryModel) Get(entryId uuid.UUID) (Entry, error) {
 			return Entry{}, err
 		}
 	}
+	defer results.Close()
 
 	for results.Next() {
 		var movement Movement

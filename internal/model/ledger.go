@@ -61,6 +61,7 @@ func (m *LedgerModel) GetLedgerAccountById(accountId uuid.UUID) (LedgerAccount, 
 			return LedgerAccount{}, err
 		}
 	}
+	defer result.Close()
 
 	balance := 0.0
 	for result.Next() {

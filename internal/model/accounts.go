@@ -69,6 +69,7 @@ func (m *AccountModel) CalculateAccountBalance(account *Account) error {
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var s subtotal
