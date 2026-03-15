@@ -89,6 +89,11 @@ func (m *EntryModel) Get(entryId uuid.UUID) (Entry, error) {
 		entry.Movements = append(entry.Movements, movement)
 	}
 
+	err = results.Err()
+	if err != nil {
+		return Entry{}, err
+	}
+
 	return entry, nil
 }
 

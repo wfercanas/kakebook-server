@@ -86,8 +86,12 @@ func (m *AccountModel) CalculateAccountBalance(account *Account) error {
 		balance += signedAmount
 	}
 
-	account.Balance = balance
+	err = rows.Err()
+	if err != nil {
+		return err
+	}
 
+	account.Balance = balance
 	return nil
 }
 

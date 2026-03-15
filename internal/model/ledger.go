@@ -81,6 +81,11 @@ func (m *LedgerModel) GetLedgerAccountById(accountId uuid.UUID) (LedgerAccount, 
 		account.Movements = append(account.Movements, movement)
 	}
 
+	err = result.Err()
+	if err != nil {
+		return LedgerAccount{}, err
+	}
+
 	account.Balance = balance
 	return account, nil
 }

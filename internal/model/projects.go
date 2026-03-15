@@ -45,6 +45,11 @@ func (m *ProjectModel) GetProjectsByUserId(userId uuid.UUID) ([]Project, error) 
 		projects = append(projects, project)
 	}
 
+	err = result.Err()
+	if err != nil {
+		return nil, err
+	}
+
 	return projects, nil
 }
 
@@ -75,6 +80,11 @@ func (m *ProjectModel) GetAccountsByProjectId(projectId uuid.UUID) ([]Account, e
 		}
 
 		accounts = append(accounts, account)
+	}
+
+	err = results.Err()
+	if err != nil {
+		return nil, err
 	}
 
 	return accounts, nil
