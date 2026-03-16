@@ -9,11 +9,11 @@ import (
 )
 
 type Account struct {
-	AccountId       uuid.UUID `json:"account_id"`
 	AccountName     string    `json:"account_name"`
 	AccountCategory string    `json:"account_category"`
-	ProjectId       uuid.UUID `json:"project_id"`
 	Balance         float64   `json:"balance"`
+	AccountId       uuid.UUID `json:"account_id"`
+	ProjectId       uuid.UUID `json:"project_id"`
 }
 
 type NewAccount struct {
