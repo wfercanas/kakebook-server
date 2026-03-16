@@ -11,7 +11,7 @@ import (
 type Application struct {
 	Logger   *slog.Logger
 	Users    *model.UserModel
-	Entries  *model.EntryModel
+	Journal  *model.JournalModel
 	Accounts *model.AccountModel
 	Projects *model.ProjectModel
 	Ledger   *model.LedgerModel

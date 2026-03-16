@@ -30,7 +30,7 @@ func main() {
 	app := &config.Application{
 		Logger:   logger,
 		Users:    &model.UserModel{DB: db},
-		Entries:  &model.EntryModel{DB: db},
+		Journal:  &model.JournalModel{DB: db},
 		Accounts: &model.AccountModel{DB: db},
 		Projects: &model.ProjectModel{DB: db},
 		Ledger:   &model.LedgerModel{DB: db},

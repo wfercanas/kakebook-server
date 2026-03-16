@@ -39,11 +39,11 @@ type NewMovement struct {
 	Value        float64   `json:"value"`
 }
 
-type EntryModel struct {
+type JournalModel struct {
 	DB *sql.DB
 }
 
-func (m *EntryModel) Get(entryId int) (Entry, error) {
+func (m *JournalModel) GetEntryById(entryId int) (Entry, error) {
 	entryStmt := `SELECT description, date, amount, project_id
 	FROM entries
 	WHERE entry_id = $1`
@@ -97,7 +97,7 @@ func (m *EntryModel) Get(entryId int) (Entry, error) {
 	return entry, nil
 }
 
-func (m *EntryModel) Delete(entryId int) error {
+func (m *JournalModel) DeleteEntryById(entryId int) error {
 	movementStmt := `DELETE FROM movements
 	WHERE entry_id = $1`
 
@@ -131,7 +131,7 @@ func (m *EntryModel) Delete(entryId int) error {
 
 }
 
-func (m *EntryModel) Insert(newEntry NewEntry) error {
+func (m *JournalModel) InsertEntry(newEntry NewEntry) error {
 	entryStmt := `INSERT INTO entries (date, description, project_id, amount)
 	VALUES ($1, $2, $3, $4) RETURNING entry_id`
 

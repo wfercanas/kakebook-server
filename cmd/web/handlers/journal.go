@@ -22,7 +22,7 @@ func GetEntryById(app *config.Application) func(w http.ResponseWriter, r *http.R
 			return
 		}
 
-		entry, err := app.Entries.Get(entryId)
+		entry, err := app.Journal.GetEntryById(entryId)
 		if err != nil {
 			if errors.Is(err, model.ErrNoRecord) {
 				app.ClientError(w, r, http.StatusNotFound, http.StatusText(http.StatusNotFound))
@@ -87,7 +87,7 @@ func CreateNewEntry(app *config.Application) func(w http.ResponseWriter, r *http
 
 		newEntry.Amount = debits
 
-		err = app.Entries.Insert(newEntry)
+		err = app.Journal.InsertEntry(newEntry)
 		if err != nil {
 			app.ServerError(w, r, err)
 			return
@@ -106,7 +106,7 @@ func DeleteEntry(app *config.Application) func(w http.ResponseWriter, r *http.Re
 			return
 		}
 
-		err = app.Entries.Delete(entryId)
+		err = app.Journal.DeleteEntryById(entryId)
 		if err != nil {
 			if errors.Is(err, model.ErrNoRecord) {
 				app.ClientError(w, r, http.StatusNotFound, http.StatusText(http.StatusNotFound))
