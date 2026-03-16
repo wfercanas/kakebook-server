@@ -13,7 +13,7 @@ type Entry struct {
 	Date        time.Time  `json:"date"`
 	Amount      float64    `json:"amount"`
 	ProjectId   uuid.UUID  `json:"project_id"`
-	EntryId     uuid.UUID  `json:"entry_id"`
+	EntryId     int        `json:"entry_id"`
 	Movements   []Movement `json:"movements"`
 }
 
@@ -43,7 +43,7 @@ type EntryModel struct {
 	DB *sql.DB
 }
 
-func (m *EntryModel) Get(entryId uuid.UUID) (Entry, error) {
+func (m *EntryModel) Get(entryId int) (Entry, error) {
 	entryStmt := `SELECT description, date, amount, project_id
 	FROM entries
 	WHERE entry_id = $1`
@@ -97,7 +97,7 @@ func (m *EntryModel) Get(entryId uuid.UUID) (Entry, error) {
 	return entry, nil
 }
 
-func (m *EntryModel) Delete(entryId uuid.UUID) error {
+func (m *EntryModel) Delete(entryId int) error {
 	movementStmt := `DELETE FROM movements
 	WHERE entry_id = $1`
 
@@ -132,8 +132,8 @@ func (m *EntryModel) Delete(entryId uuid.UUID) error {
 }
 
 func (m *EntryModel) Insert(newEntry NewEntry) error {
-	entryStmt := `INSERT INTO entries (entry_id, date, description, project_id, amount)
-	VALUES (gen_random_uuid(), $1, $2, $3, $4) RETURNING entry_id`
+	entryStmt := `INSERT INTO entries (date, description, project_id, amount)
+	VALUES ($1, $2, $3, $4) RETURNING entry_id`
 
 	movementStmt := `INSERT INTO movements (value, movement_type, account_id, entry_id)
 	VALUES ($1, $2, $3, $4)`
@@ -144,7 +144,7 @@ func (m *EntryModel) Insert(newEntry NewEntry) error {
 	}
 	defer tx.Rollback()
 
-	var entryId uuid.UUID
+	var entryId int
 
 	err = tx.QueryRow(entryStmt, newEntry.Date, newEntry.Description, newEntry.ProjectId, newEntry.Amount).Scan(&entryId)
 	if err != nil {

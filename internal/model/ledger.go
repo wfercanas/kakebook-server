@@ -3,6 +3,7 @@ package model
 import (
 	"database/sql"
 	"errors"
+	"slices"
 	"time"
 
 	"github.com/google/uuid"
@@ -24,7 +25,7 @@ type LedgerMovement struct {
 	MovementType string    `json:"movement_type"`
 	Value        float64   `json:"value"`
 	Balance      float64   `json:"balance"`
-	EntryId      uuid.UUID `json:"entry_id"`
+	EntryId      int       `json:"entry_id"`
 }
 
 type LedgerModel struct {
@@ -40,7 +41,8 @@ func (m *LedgerModel) GetLedgerAccountById(accountId uuid.UUID) (LedgerAccount, 
 	FROM movements mov
 	JOIN entries ent
 	ON mov.entry_id = ent.entry_id
-	WHERE mov.account_id = $1`
+	WHERE mov.account_id = $1
+	ORDER BY ent.date, mov.entry_id ASC`
 
 	var account LedgerAccount
 
@@ -86,6 +88,7 @@ func (m *LedgerModel) GetLedgerAccountById(accountId uuid.UUID) (LedgerAccount, 
 		return LedgerAccount{}, err
 	}
 
+	slices.Reverse(account.Movements)
 	account.Balance = balance
 	return account, nil
 }

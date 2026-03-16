@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"slices"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/wfercanas/kakebook-server/cmd/web/config"
@@ -15,7 +16,7 @@ import (
 
 func GetEntryById(app *config.Application) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		entryId, err := uuid.Parse(r.PathValue("entryId"))
+		entryId, err := strconv.Atoi(r.PathValue("entryId"))
 		if err != nil {
 			app.ClientError(w, r, http.StatusBadRequest, fmt.Sprintf("Invalid Entry Id: %s", r.PathValue("entryId")))
 			return
@@ -99,7 +100,7 @@ func CreateNewEntry(app *config.Application) func(w http.ResponseWriter, r *http
 
 func DeleteEntry(app *config.Application) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		entryId, err := uuid.Parse(r.PathValue("entryId"))
+		entryId, err := strconv.Atoi(r.PathValue("entryId"))
 		if err != nil {
 			app.ClientError(w, r, http.StatusBadRequest, fmt.Sprintf("Invalid Entry Id: %s", r.PathValue("entryId")))
 			return
