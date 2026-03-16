@@ -14,6 +14,37 @@ import (
 	"github.com/wfercanas/kakebook-server/internal/model"
 )
 
+func GetJournalByProjectId(app *config.Application) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		projectId, err := uuid.Parse(r.PathValue("projectId"))
+		if err != nil {
+			app.ClientError(w, r, http.StatusBadRequest, fmt.Sprintf("Invalid Project Id: %s", r.PathValue("projectId")))
+			return
+		}
+
+		journal, err := app.Journal.GetJournalByProjectId(projectId)
+		if err != nil {
+			if errors.Is(err, model.ErrNoRecord) {
+				app.ClientError(w, r, http.StatusNotFound, http.StatusText(http.StatusNotFound))
+				return
+			} else {
+				app.ServerError(w, r, err)
+				return
+			}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+
+		err = json.NewEncoder(w).Encode(journal)
+		if err != nil {
+			app.ServerError(w, r, err)
+			return
+		}
+
+		app.Logger.Info(http.StatusText(http.StatusOK), slog.String("method", r.Method), slog.String("uri", r.URL.RequestURI()))
+	}
+}
+
 func GetEntryById(app *config.Application) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		entryId, err := strconv.Atoi(r.PathValue("entryId"))

@@ -8,6 +8,8 @@ import (
 	"github.com/google/uuid"
 )
 
+type Journal []Entry
+
 type Entry struct {
 	Description string     `json:"description"`
 	Date        time.Time  `json:"date"`
@@ -41,6 +43,67 @@ type NewMovement struct {
 
 type JournalModel struct {
 	DB *sql.DB
+}
+
+func (m *JournalModel) GetJournalByProjectId(projectId uuid.UUID) (Journal, error) {
+	entriesStmt := `SELECT description, date, amount, entry_id, project_id
+	FROM entries
+	WHERE project_id = $1
+	ORDER BY entry_id DESC`
+
+	movementsStmt := `SELECT ac.account_name, ac.account_category, mv.movement_type, mv.value, mv.account_id
+	FROM movements mv
+	JOIN accounts ac
+	ON mv.account_id = ac.account_id
+	WHERE mv.entry_id = $1
+	ORDER BY mv.movement_type DESC`
+
+	results, err := m.DB.Query(entriesStmt, projectId)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Journal{}, ErrNoRecord
+		} else {
+			return Journal{}, err
+		}
+	}
+	defer results.Close()
+
+	var journal Journal
+
+	for results.Next() {
+		var entry Entry
+
+		err := results.Scan(&entry.Description, &entry.Date, &entry.Amount, &entry.EntryId, &entry.ProjectId)
+		if err != nil {
+			return Journal{}, err
+		}
+
+		journal = append(journal, entry)
+	}
+
+	for i := range journal {
+		results, err := m.DB.Query(movementsStmt, journal[i].EntryId)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return Journal{}, ErrNoRecord
+			} else {
+				return Journal{}, err
+			}
+		}
+		defer results.Close()
+
+		for results.Next() {
+			var movement Movement
+			err = results.Scan(&movement.AccountName, &movement.AccountCategory, &movement.MovementType, &movement.Value, &movement.AccountId)
+			if err != nil {
+				return Journal{}, err
+			}
+
+			journal[i].Movements = append(journal[i].Movements, movement)
+		}
+	}
+
+	return journal, nil
 }
 
 func (m *JournalModel) GetEntryById(entryId int) (Entry, error) {
