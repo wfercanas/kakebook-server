@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -36,6 +37,19 @@ func (app *Application) ClientError(w http.ResponseWriter, r *http.Request, stat
 func (app *Application) LogRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		app.Logger.Info("request received", slog.String("ip", r.RemoteAddr), slog.String("proto", r.Proto), slog.String("method", r.Method), slog.String("uri", r.URL.RequestURI()))
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *Application) PanicRecover(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			pv := recover()
+			if pv != nil {
+				w.Header().Set("Connection", "Close")
+				app.ServerError(w, r, fmt.Errorf("%v", pv))
+			}
+		}()
 		next.ServeHTTP(w, r)
 	})
 }

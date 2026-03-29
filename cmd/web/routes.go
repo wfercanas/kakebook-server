@@ -30,5 +30,5 @@ func routes(app *config.Application) http.Handler {
 	fs := http.FileServer(http.Dir("/ui/dist"))
 	mux.HandleFunc("/", handlers.Frontend(fs, "/ui/dist/index.html"))
 
-	return app.LogRequest(mux)
+	return app.PanicRecover(app.LogRequest(mux))
 }
