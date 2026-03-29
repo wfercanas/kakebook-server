@@ -5,9 +5,10 @@ import (
 
 	"github.com/wfercanas/kakebook-server/cmd/web/config"
 	"github.com/wfercanas/kakebook-server/cmd/web/handlers"
+	"github.com/wfercanas/kakebook-server/cmd/web/middlewares"
 )
 
-func routes(app *config.Application) *http.ServeMux {
+func routes(app *config.Application) http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /api/{$}", handlers.Health(app))
@@ -30,5 +31,5 @@ func routes(app *config.Application) *http.ServeMux {
 	fs := http.FileServer(http.Dir("/ui/dist"))
 	mux.HandleFunc("/", handlers.Frontend(fs, "/ui/dist/index.html"))
 
-	return mux
+	return middlewares.LogRequest(app, mux)
 }
