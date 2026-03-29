@@ -5,7 +5,6 @@ import (
 
 	"github.com/wfercanas/kakebook-server/cmd/web/config"
 	"github.com/wfercanas/kakebook-server/cmd/web/handlers"
-	"github.com/wfercanas/kakebook-server/cmd/web/middlewares"
 )
 
 func routes(app *config.Application) http.Handler {
@@ -31,5 +30,5 @@ func routes(app *config.Application) http.Handler {
 	fs := http.FileServer(http.Dir("/ui/dist"))
 	mux.HandleFunc("/", handlers.Frontend(fs, "/ui/dist/index.html"))
 
-	return middlewares.LogRequest(app, mux)
+	return app.LogRequest(mux)
 }

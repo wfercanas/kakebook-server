@@ -32,3 +32,10 @@ func (app *Application) ClientError(w http.ResponseWriter, r *http.Request, stat
 	app.Logger.Info(http.StatusText(status), slog.String("status", strconv.Itoa(status)), slog.String("method", method), slog.String("uri", uri), slog.String("msg", message))
 	http.Error(w, message, status)
 }
+
+func (app *Application) LogRequest(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		app.Logger.Info("request received", slog.String("ip", r.RemoteAddr), slog.String("proto", r.Proto), slog.String("method", r.Method), slog.String("uri", r.URL.RequestURI()))
+		next.ServeHTTP(w, r)
+	})
+}
