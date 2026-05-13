@@ -1,5 +1,6 @@
 import { Stack, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
+import { Journal } from "./components/Journal";
 
 interface Entry {
   description: string;
@@ -25,28 +26,11 @@ function App() {
   }, []);
 
   return (
-    <Stack padding={"64px 32px"}>
-      <Typography variant="h6">Journal</Typography>
-      {entries.length > 0 &&
-        entries.map((entry) => (
-          <Stack
-            flexDirection="row"
-            justifyContent="space-between"
-            gap="8px"
-            padding="4px 6px"
-            key={entry.entry_id}
-          >
-            <Typography variant="body2">
-              {entry.description} - {entry.date}
-            </Typography>
-            <Typography variant="body2" fontWeight="600">
-              {Intl.NumberFormat("us-US", {
-                style: "currency",
-                currency: "USD",
-              }).format(entry.amount)}
-            </Typography>
-          </Stack>
-        ))}
+    <Stack padding={"64px 32px"} gap="36px">
+      <Typography variant="h5" fontWeight="bold">
+        Kakebook
+      </Typography>
+      {entries.length == 0 ? "loading" : <Journal entries={entries} />}
     </Stack>
   );
 }
